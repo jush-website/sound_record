@@ -1,0 +1,20 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 預設拒絕所有未授權的讀寫
+    match /{document=**} {
+      allow read, write: if false;
+    }
+    
+    // 允許已登入的使用者讀寫自己的語音紀錄
+    match /recordings/{recordingId} {
+      allow create: if request.auth != null && request.resource.data.uid == request.auth.uid;
+      allow read, update, delete: if request.auth != null && resource.data.uid == request.auth.uid;
+    }
+    
+    // 允許已登入的使用者讀寫自己的使用者設定檔
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+  }
+}
