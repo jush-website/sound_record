@@ -87,13 +87,14 @@ async def lifespan(app: FastAPI):
     else:
         logger.error(f"初始化失敗: {init_result.get('error')}")
 
-    # 嘗試初始化串流辨識器
-    try:
-        stream_result = sherpa.initialize_streaming()
-        if stream_result.get("success"):
-            logger.info("Sherpa-ONNX 串流辨識器初始化成功")
-    except Exception as e:
-        logger.warning(f"串流辨識器初始化失敗: {e}")
+    # 關閉串流辨識器初始化，節省 Render 的記憶體 (避免 Out of memory)
+    # 由於我們的前端都是使用單次語音辨識 (/transcribe)，不需要載入龐大的串流模型
+    # try:
+    #     stream_result = sherpa.initialize_streaming()
+    #     if stream_result.get("success"):
+    #         logger.info("Sherpa-ONNX 串流辨識器初始化成功")
+    # except Exception as e:
+    #     logger.warning(f"串流辨識器初始化失敗: {e}")
 
     yield
 

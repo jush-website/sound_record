@@ -36,12 +36,13 @@ MODELS = [
         "sherpa-onnx-punct-ct-transformer-zh-en-vocab272727-2024-04-12",
         "model.onnx",
     ),
-    (
-        "串流辨識 Zipformer",
-        f"{BASE}/asr-models/sherpa-onnx-streaming-zipformer-bilingual-zh-en-2023-02-20.tar.bz2",
-        "sherpa-onnx-streaming-zipformer-bilingual-zh-en-2023-02-20",
-        "encoder-epoch-99-avg-1.onnx",
-    ),
+    # 由於 Render 記憶體限制 (512MB)，我們關閉串流模型下載以節省空間與記憶體
+    # (
+    #     "串流辨識 Zipformer",
+    #     f"{BASE}/asr-models/sherpa-onnx-streaming-zipformer-bilingual-zh-en-2023-02-20.tar.bz2",
+    #     "sherpa-onnx-streaming-zipformer-bilingual-zh-en-2023-02-20",
+    #     "encoder-epoch-99-avg-1.onnx",
+    # ),
 ]
 
 
