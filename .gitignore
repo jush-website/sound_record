@@ -1,0 +1,28 @@
+# Python / Backend
+__pycache__/
+*.py[cod]
+*$py.class
+.env
+.venv
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# 忽略大型語音模型檔案 (避免上傳超過 GitHub 限制)
+*.onnx
+*.bin
+*.pt
+backend/models/
+sherpa_onnx_models/
+
+# macOS
+.DS_Store
+
+# Frontend
+node_modules/
+dist/
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
