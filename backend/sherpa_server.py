@@ -271,9 +271,9 @@ class SherpaServer:
         self.streaming_vad_skipped = 0  # 跳過的 chunk 數
         self.streaming_vad_total = 0  # 總 chunk 數
 
-        # 動態執行緒數：根據 CPU 核心數調整，最多 8 執行緒
-        self.num_threads = min(os.cpu_count() or 4, 8)
-        logger.info(f"動態執行緒數: {self.num_threads} (CPU 核心: {os.cpu_count()})")
+        # 動態執行緒數：由於 Render 免費版記憶體極小 (512MB)，我們將執行緒限制為 1，以大幅減少 ONNX 的記憶體開銷
+        self.num_threads = 1
+        logger.info(f"強制執行緒數: {self.num_threads} (避免 OOM)")
 
         # 推論提供者 (provider)：cpu / cuda / directml 等
         # 透過環境變數 SHERPA_PROVIDER 控制，預設 cpu。
@@ -707,43 +707,10 @@ class SherpaServer:
 
     def _init_punctuation_model(self):
         """在背景線程初始化 sherpa-onnx 標點模型（ct-transformer，免 torch）"""
-        import threading
-
-        def load_punc_model():
-            try:
-                import time
-                import sherpa_onnx
-                start_time = time.time()
-
-                model_path = os.path.join(self.punct_model_dir, "model.onnx")
-                if not os.path.exists(model_path):
-                    logger.warning(
-                        f"標點模型不存在，將使用規則式標點: {model_path}"
-                    )
-                    self.punc_model = None
-                    return
-
-                logger.info("正在載入 sherpa-onnx 標點模型 ct-transformer（背景）...")
-
-                config = sherpa_onnx.OfflinePunctuationConfig(
-                    model=sherpa_onnx.OfflinePunctuationModelConfig(
-                        ct_transformer=model_path,
-                        num_threads=self.num_threads,
-                        provider="cpu",  # 標點模型小，CPU 已足夠快且最穩定
-                    )
-                )
-                self.punc_model = sherpa_onnx.OfflinePunctuation(config)
-
-                load_time = time.time() - start_time
-                logger.info(f"sherpa-onnx 標點模型載入完成，耗時: {load_time:.2f} 秒")
-
-            except Exception as e:
-                logger.warning(f"標點模型載入失敗，將使用規則式標點: {e}")
-                self.punc_model = None
-
-        # 在背景線程載入，不阻塞主服務
-        thread = threading.Thread(target=load_punc_model, daemon=True)
-        thread.start()
+        # 由於 Render 免費版記憶體極小 (512MB)，關閉標點模型載入，使用內建規則標點
+        logger.info("為節省記憶體，停用深度學習標點模型，將使用規則式標點")
+        self.punc_model = None
+        return
 
     def _preprocess_audio(self, samples):
         """音頻預處理：正規化音量、降噪"""
