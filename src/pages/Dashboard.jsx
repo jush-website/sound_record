@@ -13,10 +13,11 @@ function Dashboard({ user }) {
   const fetchRecordings = async () => {
     try {
       setLoading(true);
+      // 移除 orderBy('createdAt', 'desc') 避免 Firestore 要求建立複合索引而報錯
+      // 我們改在前端收到資料後自己排序
       const q = query(
         collection(db, 'recordings'),
-        where('uid', '==', user.uid),
-        orderBy('createdAt', 'desc')
+        where('uid', '==', user.uid)
       );
       
       const querySnapshot = await getDocs(q);
@@ -24,10 +25,18 @@ function Dashboard({ user }) {
         id: doc.id,
         ...doc.data()
       }));
+      
+      // 前端依照時間降冪排序 (最新的在前面)
+      data.sort((a, b) => {
+        const timeA = a.createdAt ? a.createdAt.toMillis() : 0;
+        const timeB = b.createdAt ? b.createdAt.toMillis() : 0;
+        return timeB - timeA;
+      });
+      
       setRecordings(data);
     } catch (err) {
-      console.error(err);
-      // Ensure index is created if getting an index required error from Firebase
+      console.error("載入歷史紀錄失敗:", err);
+      alert('載入歷史紀錄失敗，請確認 Firebase 權限設定。');
     } finally {
       setLoading(false);
     }
