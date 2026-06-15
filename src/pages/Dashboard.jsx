@@ -54,6 +54,22 @@ function Dashboard({ user }) {
     }
   };
 
+  const handleExportTxt = (record) => {
+    const dateStr = formatDate(record.createdAt).replace(/[:/\s]/g, '-');
+    const filename = `語音紀錄_${dateStr}.txt`;
+    const content = `時間：${formatDate(record.createdAt)}\n\n${record.text}`;
+    
+    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   const formatDate = (timestamp) => {
     if (!timestamp) return '';
     return new Date(timestamp.toDate()).toLocaleString('zh-TW', {
@@ -79,13 +95,22 @@ function Dashboard({ user }) {
             <div key={rec.id} className="glass-panel record-card">
               <div className="record-header">
                 <span>📅 {formatDate(rec.createdAt)}</span>
-                <button 
-                  className="btn btn-danger" 
-                  style={{padding: '0.4rem 0.8rem', fontSize: '0.85rem'}}
-                  onClick={() => handleDelete(rec.id)}
-                >
-                  刪除
-                </button>
+                <div style={{display: 'flex', gap: '8px'}}>
+                  <button 
+                    className="btn btn-primary" 
+                    style={{padding: '0.4rem 0.8rem', fontSize: '0.85rem', background: 'var(--accent)'}}
+                    onClick={() => handleExportTxt(rec)}
+                  >
+                    匯出 txt
+                  </button>
+                  <button 
+                    className="btn btn-danger" 
+                    style={{padding: '0.4rem 0.8rem', fontSize: '0.85rem'}}
+                    onClick={() => handleDelete(rec.id)}
+                  >
+                    刪除
+                  </button>
+                </div>
               </div>
               <div className="record-text">
                 {rec.text}
