@@ -59,7 +59,8 @@ function Dashboard({ user }) {
     const filename = `語音紀錄_${dateStr}.txt`;
     const content = `時間：${formatDate(record.createdAt)}\n\n${record.text}`;
     
-    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+    // 加入 UTF-8 BOM (\uFEFF) 讓 Windows 記事本能正確識別中文編碼，避免亂碼
+    const blob = new Blob(['\uFEFF' + content], { type: 'text/plain;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
